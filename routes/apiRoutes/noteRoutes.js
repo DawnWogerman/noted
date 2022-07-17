@@ -1,34 +1,41 @@
 const router = require('express').Router();
-const { createNewNote } = require('../../lib/notes');
-const notes = require('../../db/db.json');
 const generateUniqueId = require('generate-unique-id');
 const fs = require('fs');
 const path = require('path');
 
-const id = generateUniqueId({
-    length: 10,
-    useLetters: false
-});
 
-router.get('/notes', (req, res) =>{
-    let results = notes;
+
+router.get('/notes', (req, res) => {
+    let results = JSON.parse(fs.readFileSync('db/db.json'));
     res.json(results);
 });
 
-router.post('/notes', (req, res) =>{
-    let results = notes;
-    //set id based on next index
+router.post('/notes', (req, res) => {
+    let results = JSON.parse(fs.readFileSync('db/db.json'));
+    //set id ?
 
-    let newNote = {title, text, id};
+    let newNote = { title: req.body.title, text: req.body.text, id: generateUniqueId()};
     results.push(newNote);
 
     //add the note to the db.json file
-    const write = fs.writeFileSync(
+    fs.writeFileSync(
         path.join(__dirname, '../../db/db.json'),
         JSON.stringify(results)
     );
+    res.json(newNote);
+   
 });
 
+router.delete('/notes/:id', (req, res) =>{
+    let results = JSON.parse(fs.readFileSync('db/db.json'));
+    let newNoteArray = results.filter((note) => note.id !== req.params.id);
+
+    fs.writeFileSync(
+        path.join(__dirname, '../../db/db.json'),
+        JSON.stringify(newNoteArray)
+    );
+    res.json(newNoteArray);
+})
 
 module.exports = router;
 
